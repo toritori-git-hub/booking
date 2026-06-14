@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仮予約フォーム｜クリーンハンター</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f4f8; color: #333; font-size: 15px; }
+    header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 28px 24px 24px; text-align: center; }
+    header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.05em; }
+    header .lead { margin-top: 12px; font-size: 0.88rem; line-height: 1.8; opacity: 0.93; }
+    header .time-note { display: inline-block; margin-top: 10px; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 16px; font-size: 0.82rem; font-weight: 600; }
+    .container { max-width: 680px; margin: 24px auto; padding: 0 14px 60px; }
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #1a73e8; border-left: 4px solid #1a73e8; padding-left: 10px; margin-bottom: 12px; }
+    .calendar-wrap { background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+    .calendar-wrap p.note { font-size: 0.82rem; color: #555; margin-bottom: 12px; font-weight: 600; }
+    .form-card { background: white; border-radius: 14px; padding: 24px 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.09); }
+    .field-group { margin-bottom: 22px; }
+    label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; color: #333; }
+    label .req { background: #e53935; color: white; font-size: 0.7rem; font-weight: 700; border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+    label .opt { background: #78909c; color: white; font-size: 0.7rem; font-weight: 700; border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+    .field-desc { font-size: 0.78rem; color: #777; margin-bottom: 6px; line-height: 1.5; }
+    input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+      width: 100%; padding: 11px 13px; border: 1.5px solid #ddd; border-radius: 9px;
+      font-size: 0.95rem; font-family: inherit; background: #fafafa;
+      transition: border-color 0.2s, background 0.2s; -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #1a73e8; background: white; }
+    textarea { resize: vertical; min-height: 90px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .choice-block { background: #f0f4ff; border-radius: 11px; padding: 16px; margin-bottom: 16px; }
+    .choice-block h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 14px; color: #1a73e8; }
+    .cond-section { display: none; background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 11px; padding: 16px; margin-bottom: 16px; }
+    .cond-section h3 { font-size: 0.88rem; font-weight: 700; color: #e65100; margin-bottom: 14px; }
+    .divider { height: 1px; background: #eee; margin: 24px 0; }
+    .submit-btn { display: block; width: 100%; padding: 16px; background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; font-size: 1.05rem; font-weight: 800; border: none; border-radius: 11px; cursor: pointer; margin-top: 10px; letter-spacing: 0.05em; transition: opacity 0.2s; }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .success-screen { display: none; text-align: center; padding: 10px 0 20px; }
+    .success-screen .check { font-size: 3rem; margin-bottom: 12px; }
+    .success-screen h2 { font-size: 1.25rem; font-weight: 800; color: #1a73e8; margin-bottom: 6px; }
+    .success-screen .caution { background: #fff3e0; border: 2px solid #ffb300; border-radius: 12px; padding: 18px 16px; margin: 18px 0; font-size: 1rem; line-height: 2; font-weight: 600; color: #333; }
+    .success-screen .caution .big { display: block; font-size: 1.4rem; font-weight: 800; color: #e53935; margin: 6px 0; }
+    .line-btn { display: inline-block; margin-top: 16px; padding: 14px 32px; background: #06c755; color: white; font-size: 1.05rem; font-weight: 800; border-radius: 50px; text-decoration: none; letter-spacing: 0.05em; }
+    .line-btn:hover { opacity: 0.88; }
+    footer { text-align: center; font-size: 0.75rem; color: #aaa; padding: 20px; }
+    @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } header h1 { font-size: 1.25rem; } }
+
+    /* カスタムカレンダー */
+    #availCalendar { font-family: inherit; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cal-header button { background: #e8f0fe; border: none; border-radius: 6px; padding: 6px 14px; font-size: 1rem; cursor: pointer; color: #1a73e8; font-weight: 700; }
+    .cal-header button:hover { background: #d2e3fc; }
+    .cal-title { font-size: 1rem; font-weight: 700; color: #333; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-dow { text-align: center; font-size: 0.75rem; font-weight: 700; color: #888; padding: 4px 0; }
+    .cal-dow:first-child { color: #e53935; }
+    .cal-dow:last-child  { color: #1a73e8; }
+    .cal-day { text-align: center; padding: 4px 2px; border-radius: 8px; font-size: 0.82rem; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; }
+    .cal-day .cal-num { font-size: 0.85rem; font-weight: 600; line-height: 1.6; }
+    .cal-day .cal-mark { font-size: 0.9rem; line-height: 1; }
+    .cal-day .cal-label { font-size: 0.58rem; color: #777; }
+    .cal-day.empty { background: none; }
+    .cal-day.available { background: #e8f5e9; }
+    .cal-day.triangle  { background: #fff8e1; }
+    .cal-day.full      { background: #f5f5f5; color: #bbb; }
+    .cal-day.past      { background: none; color: #ccc; }
+    .cal-day.today .cal-num { background: #1a73e8; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .cal-loading { text-align: center; color: #888; padding: 20px; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🧹 仮予約フォーム</h1>
+  <div class="lead">
+    こちらは仮予約です。<br>
+    送信後、担当者よりLINEにてご連絡いたします。<br>
+    作業内容や移動距離により、ご希望日時に沿えない場合があります。<br>
+    その際は第2希望以降でご案内させていただく場合がございます。
+  </div>
+  <span class="time-note">⏱ 入力は1分程度です。お気軽にご相談ください。</span>
+</header>
+
+<div class="container">
+
+  <div class="section-title">▶ 空き状況カレンダー</div>
+  <div class="calendar-wrap">
+    <p class="note">⭕️ 予約可能 &nbsp;／&nbsp; 🔺 残りわずか &nbsp;／&nbsp; ❌ 満員・受付不可</p>
+    <div id="availCalendar"><div class="cal-loading">カレンダーを読み込み中...</div></div>
+  </div>
+
+  <div class="section-title">▶ 仮予約フォーム</div>
+  <div class="form-card">
+
+    <form id="bookingForm" action="https://script.google.com/macros/s/AKfycbwU1VE4Pc6X4wa9RNxJUiy3PP7xPhz12nZGFjj_A2TuEDj16eDNv20aBuE4NVH-9NP0/exec" method="POST">
+
+      <div class="field-group">
+        <label>① LINE名 または お名前<span class="req">必須</span></label>
+        <p class="field-desc">LINEをご利用の方はLINEのお名前を、ご利用でない方はお名前をご入力ください。</p>
+        <input type="text" name="line_name" placeholder="例：山田 太郎" required>
+      </div>
+
+      <div class="field-group">
+        <label>ご希望の連絡方法<span class="req">必須</span></label>
+        <select name="contact_method" id="contactMethod" required>
+          <option value="">--- 選択してください ---</option>
+          <option value="LINE">LINE</option>
+          <option value="メール">メール</option>
+          <option value="電話">電話</option>
+          <option value="どれでも可">どれでも可</option>
+        </select>
+      </div>
+
+      <div class="field-group" id="emailGroup" style="display:none;">
+        <label>メールアドレス<span id="emailReqBadge" class="req">必須</span></label>
+        <p class="field-desc">メールでの連絡をご希望の方はご入力ください。</p>
+        <input type="email" name="email" id="emailInput" placeholder="例：example@email.com">
+      </div>
+
+      <div class="field-group" id="phoneGroup" style="display:none;">
+        <label>電話番号<span id="phoneReqBadge" class="req">必須</span></label>
+        <p class="field-desc">電話での連絡をご希望の方はご入力ください。</p>
+        <input type="tel" name="phone" id="phoneInput" placeholder="例：090-0000-0000">
+      </div>
+
+      <div class="field-group">
+        <label>② 作業場所<span class="req">必須</span></label>
+        <p class="field-desc">市区町村・町名までご入力ください。番地は正式予約後にお伺いします。</p>
+        <input type="text" name="address" placeholder="例：神戸市東灘区深江南町" required>
+      </div>
+
+      <div class="field-group">
+        <label>③ ご希望の作業<span class="req">必須</span></label>
+        <select name="menu" id="menuSelect" required>
+          <option value="">--- 選択してください ---</option>
+          <option value="エアコンクリーニング">エアコンクリーニング</option>
+          <option value="ドラム式洗濯機クリーニング">ドラム式洗濯機クリーニング</option>
+          <option value="縦型洗濯機クリーニング">縦型洗濯機クリーニング</option>
+          <option value="風呂釜配管クリーニング">風呂釜配管クリーニング</option>
+          <option value="浴室クリーニング">浴室クリーニング</option>
+          <option value="レンジフードクリーニング">レンジフードクリーニング</option>
+          <option value="排水管洗浄">排水管洗浄</option>
+          <option value="網戸取付・張替">網戸取付・張替</option>
+          <option value="その他（備考欄に記載）">その他（備考欄に記載）</option>
+        </select>
+      </div>
+
+      <div class="cond-section" id="airconSection">
+        <h3>🌬️ エアコンクリーニング 追加情報</h3>
+        <div class="row2">
+          <div class="field-group">
+            <label>台数<span class="req">必須</span></label>
+            <select name="aircon_count" id="aircon_count">
+              <option value="">選択</option>
+              <option>1台</option><option>2台</option><option>3台</option><option>4台以上</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>お掃除機能<span class="req">必須</span></label>
+            <select name="aircon_clean_func" id="aircon_clean_func">
+              <option value="">選択</option>
+              <option>あり</option><option>なし</option><option>分からない</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>メーカー・型番<span class="opt">任意</span></label>
+          <p class="field-desc">分かる範囲でご記入ください。不明の場合は空欄で構いません。</p>
+          <input type="text" name="aircon_info" placeholder="例：ダイキン F-40XEXV">
+        </div>
+      </div>
+
+      <div class="cond-section" id="washerSection">
+        <h3>🫧 ドラム式洗濯機クリーニング 追加情報</h3>
+        <div class="field-group">
+          <label>メーカー・型番<span class="opt">任意</span></label>
+          <p class="field-desc">分かる範囲でご記入ください。不明の場合は空欄で構いません。</p>
+          <input type="text" name="washer_info" placeholder="例：パナソニック NA-VX900BL">
+        </div>
+        <div class="field-group">
+          <label>洗濯機の上にラックはありますか？<span class="req">必須</span></label>
+          <select name="washer_rack" id="washer_rack">
+            <option value="">選択</option>
+            <option>あり</option><option>なし</option><option>分からない</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>設置状況の写真をLINEで送付済みですか？<span class="req">必須</span></label>
+          <select name="washer_photo" id="washer_photo">
+            <option value="">選択</option>
+            <option>送付済み</option><option>これから送る</option><option>送れない</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>④ お困りごと<span class="req">必須</span></label>
+        <textarea name="trouble" placeholder="例：&#10;・エアコンがカビ臭い&#10;・ドラム式洗濯機が乾かない&#10;・生乾き臭がする&#10;・赤ちゃんが生まれる前に綺麗にしたい" required></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>⑤ お急ぎですか？<span class="req">必須</span></label>
+        <select name="urgency" required>
+          <option value="">--- 選択してください ---</option>
+          <option>1週間以内希望</option><option>今月中</option>
+          <option>空いている日ならいつでも</option><option>急ぎではない</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>⑥ 当店のご利用は初めてですか？<span class="req">必須</span></label>
+        <select name="first_visit" required>
+          <option value="">--- 選択してください ---</option>
+          <option>初めて</option><option>利用したことがある</option><option>分からない</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="choice-block">
+        <h3>🥇 第1希望日時</h3>
+        <div class="row2">
+          <div class="field-group">
+            <label>日付<span class="req">必須</span></label>
+            <select name="first_date" id="firstDateSelect" required>
+              <option value="">読み込み中...</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>時間帯<span class="req">必須</span></label>
+            <select name="first_time" required>
+              <option value="">選択</option>
+              <option>午前</option><option>午後</option><option>どちらでも可</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="choice-block">
+        <h3>🥈 第2希望日時<span style="font-size:0.78rem; font-weight:400; color:#888; margin-left:8px;">（任意）</span></h3>
+        <div class="row2">
+          <div class="field-group">
+            <label>日付<span class="opt">任意</span></label>
+            <select name="second_date" id="secondDateSelect">
+              <option value="">読み込み中...</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>時間帯<span class="opt">任意</span></label>
+            <select name="second_time">
+              <option value="">選択</option>
+              <option>午前</option><option>午後</option><option>どちらでも可</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>駐車場の有無<span class="req">必須</span></label>
+        <select name="parking" required>
+          <option value="">--- 選択してください ---</option>
+          <option>あり</option><option>なし</option><option>近隣コインパーキングあり</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-group">
+        <label>備考・ご質問・ご要望<span class="opt">任意</span></label>
+        <p class="field-desc">複数メニュー希望・ご質問・LINEをご利用でない方の連絡補足などがあればご記入ください。</p>
+        <textarea name="notes" placeholder="例：浴室とレンジフードもまとめてお願いしたい、など"></textarea>
+      </div>
+
+      <input type="hidden" name="submitted_at" id="submittedAt">
+      <input type="hidden" name="_subject" value="【仮予約】クリーンハンター">
+
+      <button type="submit" class="submit-btn">仮予約を送信する →</button>
+    </form>
+
+    <div class="success-screen" id="successScreen">
+      <div class="check">✅</div>
+      <h2>仮予約を受け付けました</h2>
+      <p style="color:#555; font-size:0.9rem;">内容を確認次第、担当者よりご連絡いたします。</p>
+      <div id="successLine">
+        <div class="caution">
+          ⚠️ <strong>まだ予約は確定しておりません。</strong><br>
+          確認漏れ防止のため、<br>この画面を閉じる前に<br>必ずLINEへ<br>
+          <span class="big">「予約送信済み」</span>
+          と送信してください。<br><br>
+          フォーム内容を確認後、<br>担当者よりご連絡いたします。
+        </div>
+        <a class="line-btn" href="https://line.me/R/ti/p/%40jte8849v" target="_blank">💬 LINEへ戻る</a>
+      </div>
+      <div id="successOther" style="display:none;">
+        <div class="caution">
+          ⚠️ <strong>まだ予約は確定しておりません。</strong><br><br>
+          内容を確認後、<br>ご入力いただいた連絡方法にて<br>担当者よりご連絡いたします。<br><br>
+          しばらくお待ちください。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© クリーンハンター｜このフォームからの送信は仮予約です。確定後に正式なご予約となります。</footer>
+
+<script>
+// ── Googleカレンダーから空き状況を取得・表示 ──────────
+var CAL_ID  = 'j9fic7ehsfr41cb316v3jl95i0@group.calendar.google.com';
+var API_KEY = 'AIzaSyBxn2wk_8uH9c2Zeq7IvCRrFSjOuxURhLw';
+var calEvents = {};
+var calCurrentMonth;
+
+function calFetchEvents(year, month) {
+  var timeMin = new Date(year, month, 1).toISOString();
+  var timeMax = new Date(year, month + 2, 0).toISOString();
+  var url = 'https://www.googleapis.com/calendar/v3/calendars/'
+    + encodeURIComponent(CAL_ID)
+    + '/events?key=' + API_KEY
+    + '&timeMin=' + encodeURIComponent(timeMin)
+    + '&timeMax=' + encodeURIComponent(timeMax)
+    + '&singleEvents=true&orderBy=startTime&maxResults=200';
+
+  document.getElementById('availCalendar').innerHTML = '<div class="cal-loading">カレンダーを読み込み中...</div>';
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      calEvents = {};
+      if (data.items) {
+        data.items.forEach(function(ev) {
+          var title = ev.summary || '';
+          var date  = (ev.start.date || ev.start.dateTime || '').slice(0, 10);
+          if (!date) return;
+          if (title.indexOf('⭕') !== -1) {
+            calEvents[date] = '⭕️';
+          } else if (title.indexOf('🔺') !== -1) {
+            if (calEvents[date] !== '⭕️') calEvents[date] = '🔺';
+          } else if (title.indexOf('❌') !== -1 || title.indexOf('×') !== -1) {
+            if (!calEvents[date]) calEvents[date] = '❌';
+          }
+        });
+      }
+      calRender(year, month);
+      updateDateSelects();
+    })
+    .catch(function() {
+      document.getElementById('availCalendar').innerHTML = '<div class="cal-loading">カレンダーの読み込みに失敗しました。</div>';
+    });
+}
+
+function calRender(year, month) {
+  var todayDate = new Date(); todayDate.setHours(0,0,0,0);
+  var firstDay    = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var monthNames  = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var dows = ['日','月','火','水','木','金','土'];
+
+  var html = '<div class="cal-header">'
+    + '<button id="calPrev">＜</button>'
+    + '<span class="cal-title">' + year + '年 ' + monthNames[month] + '</span>'
+    + '<button id="calNext">＞</button></div>'
+    + '<div class="cal-grid">'
+    + dows.map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join('');
+
+  for (var i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var date    = new Date(year, month, d);
+    var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    var isPast  = date < todayDate;
+    var isToday = date.getTime() === todayDate.getTime();
+    var mark    = calEvents[dateStr] || '';
+    var cls = 'cal-day'; var mh = ''; var lh = '';
+
+    if (isPast) { cls += ' past'; }
+    else if (mark === '⭕️') { cls += ' available'; mh = '<span class="cal-mark">⭕️</span>'; lh = '<span class="cal-label">予約可</span>'; }
+    else if (mark === '🔺') { cls += ' triangle';  mh = '<span class="cal-mark">🔺</span>';  lh = '<span class="cal-label">残りわずか</span>'; }
+    else if (mark === '❌') { cls += ' full';      mh = '<span class="cal-mark">❌</span>';  lh = '<span class="cal-label">満員</span>'; }
+    else { cls += ' full'; }
+    if (isToday) cls += ' today';
+
+    html += '<div class="' + cls + '"><span class="cal-num">' + d + '</span>' + mh + lh + '</div>';
+  }
+  html += '</div>';
+  document.getElementById('availCalendar').innerHTML = html;
+
+  document.getElementById('calPrev').onclick = function() {
+    var now = new Date();
+    if (calCurrentMonth.getFullYear() === now.getFullYear() && calCurrentMonth.getMonth() === now.getMonth()) return;
+    calCurrentMonth.setMonth(calCurrentMonth.getMonth() - 1);
+    calFetchEvents(calCurrentMonth.getFullYear(), calCurrentMonth.getMonth());
+  };
+  document.getElementById('calNext').onclick = function() {
+    calCurrentMonth.setMonth(calCurrentMonth.getMonth() + 1);
+    calFetchEvents(calCurrentMonth.getFullYear(), calCurrentMonth.getMonth());
+  };
+}
+
+function updateDateSelects() {
+  var todayDate = new Date(); todayDate.setHours(0,0,0,0);
+  var dows = ['日','月','火','水','木','金','土'];
+  var available = Object.keys(calEvents).filter(function(d) {
+    var dt = new Date(d + 'T00:00:00');
+    return dt >= todayDate && (calEvents[d] === '⭕️' || calEvents[d] === '🔺');
+  }).sort();
+
+  function buildOptions(emptyLabel) {
+    var html = '<option value="">' + emptyLabel + '</option>';
+    if (available.length === 0) {
+      html += '<option value="" disabled>現在空きがありません</option>';
+    }
+    available.forEach(function(d) {
+      var dt   = new Date(d + 'T00:00:00');
+      var mark = calEvents[d];
+      var label = (dt.getMonth()+1) + '月' + dt.getDate() + '日（' + dows[dt.getDay()] + '）' + mark;
+      html += '<option value="' + d + '">' + label + '</option>';
+    });
+    return html;
+  }
+
+  var s1 = document.getElementById('firstDateSelect');
+  var s2 = document.getElementById('secondDateSelect');
+  if (s1) s1.innerHTML = buildOptions('--- 日付を選択 ---');
+  if (s2) s2.innerHTML = buildOptions('--- 日付を選択（任意）---');
+}
+
+// ── メイン処理 ──────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var now = new Date();
+  calCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  calFetchEvents(now.getFullYear(), now.getMonth());
+
+  function g(id) { return document.getElementById(id); }
+
+  var contactMethod = g('contactMethod');
+  var emailGroup    = g('emailGroup');
+  var phoneGroup    = g('phoneGroup');
+  var emailInput    = g('emailInput');
+  var phoneInput    = g('phoneInput');
+  var emailReqBadge = g('emailReqBadge');
+  var phoneReqBadge = g('phoneReqBadge');
+  var menuSelect    = g('menuSelect');
+  var airconSec     = g('airconSection');
+  var washerSec     = g('washerSection');
+  var airconCount   = g('aircon_count');
+  var airconFunc    = g('aircon_clean_func');
+  var washerRack    = g('washer_rack');
+  var washerPhoto   = g('washer_photo');
+  var form          = g('bookingForm');
+  var successScreen = g('successScreen');
+  var successLine   = g('successLine');
+  var successOther  = g('successOther');
+
+  // 連絡方法切り替え
+  if (contactMethod) contactMethod.addEventListener('change', function() {
+    var val = this.value;
+    var showEmail = (val === 'メール' || val === 'どれでも可');
+    var showPhone = (val === '電話'   || val === 'どれでも可');
+    if (emailGroup) emailGroup.style.display = showEmail ? 'block' : 'none';
+    if (phoneGroup) phoneGroup.style.display = showPhone ? 'block' : 'none';
+    if (emailInput) { emailInput.required = (val === 'メール'); if (!showEmail) emailInput.value = ''; }
+    if (phoneInput) { phoneInput.required = (val === '電話');   if (!showPhone) phoneInput.value = ''; }
+    if (emailReqBadge) { emailReqBadge.textContent = (val === 'メール') ? '必須' : '任意'; emailReqBadge.className = (val === 'メール') ? 'req' : 'opt'; }
+    if (phoneReqBadge) { phoneReqBadge.textContent = (val === '電話') ? '必須' : '任意'; phoneReqBadge.className = (val === '電話') ? 'req' : 'opt'; }
+  });
+
+  // 作業メニュー切り替え
+  if (menuSelect) menuSelect.addEventListener('change', function() {
+    var val = this.value;
+    var isAircon = (val === 'エアコンクリーニング');
+    var isDrum   = (val === 'ドラム式洗濯機クリーニング');
+    if (airconSec)   airconSec.style.display = isAircon ? 'block' : 'none';
+    if (airconCount) { airconCount.required = isAircon; if (!isAircon) airconCount.value = ''; }
+    if (airconFunc)  { airconFunc.required  = isAircon; if (!isAircon) airconFunc.value  = ''; }
+    if (washerSec)   washerSec.style.display = isDrum ? 'block' : 'none';
+    if (washerRack)  { washerRack.required  = isDrum; if (!isDrum) washerRack.value  = ''; }
+    if (washerPhoto) { washerPhoto.required = isDrum; if (!isDrum) washerPhoto.value = ''; }
+  });
+
+  // フォーム送信
+  if (!form) return;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    g('submittedAt').value = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+    var btn = form.querySelector('.submit-btn');
+    btn.textContent = '送信中...';
+    btn.disabled = true;
+
+    var method = contactMethod ? contactMethod.value : '';
+
+    function showSuccess() {
+      form.style.display = 'none';
+      if (successLine)   successLine.style.display  = (method === 'LINE') ? 'block' : 'none';
+      if (successOther)  successOther.style.display = (method !== 'LINE') ? 'block' : 'none';
+      if (successScreen) successScreen.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    var params = new URLSearchParams(new FormData(form));
+    fetch(form.getAttribute('action'), {
+      method: 'POST',
+      mode: 'no-cors',
+      body: params
+    }).then(function() {
+      showSuccess();
+    }).catch(function() {
+      btn.textContent = '仮予約を送信する →';
+      btn.disabled = false;
+      alert('送信に失敗しました。もう一度お試しください。');
+    });
+  });
+
+});
+</script>
+</body>
+</html>

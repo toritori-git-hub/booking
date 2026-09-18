@@ -94,7 +94,7 @@
   <div class="section-title">▶ 仮予約フォーム</div>
   <div class="form-card">
 
-    <form id="bookingForm" action="https://script.google.com/macros/s/AKfycbwU1VE4Pc6X4wa9RNxJUiy3PP7xPhz12nZGFjj_A2TuEDj16eDNv20aBuE4NVH-9NP0/exec" method="POST">
+    <form id="bookingForm" action="https://script.google.com/macros/s/AKfycbz54b__Gi1AwTdwCrAE50JU4f3bhKn2X5bcLlushUQyPZosjvidj7pWVFt9lWLPSgY/exec" method="POST">
 
       <div class="field-group">
         <label>① LINE名 または お名前<span class="req">必須</span></label>
@@ -111,6 +111,23 @@
           <option value="電話">電話</option>
           <option value="どれでも可">どれでも可</option>
         </select>
+      </div>
+
+      <!-- LINE友だち追加案内 -->
+      <div id="lineNotice" style="display:none; background:#e8f5e9; border:2px solid #06c755; border-radius:11px; padding:16px; margin-bottom:16px;">
+        <p style="font-size:0.88rem; font-weight:700; color:#1b5e20; margin-bottom:10px;">📱 LINEでのご連絡をご希望の場合</p>
+        <p style="font-size:0.82rem; color:#333; line-height:1.7; margin-bottom:12px;">
+          担当者からLINEでご連絡するため、<br>
+          <strong>公式LINEの友だち追加が必要です。</strong><br>
+          まだ友だち追加されていない方は先にご登録ください。
+        </p>
+        <a href="https://line.me/R/ti/p/%40jte8849v" target="_blank"
+           style="display:inline-block; background:#06c755; color:white; font-size:0.9rem; font-weight:800; padding:10px 20px; border-radius:50px; text-decoration:none;">
+          💬 友だち追加はこちら
+        </a>
+        <p style="font-size:0.78rem; color:#555; margin-top:10px;">
+          ✅ 友だち追加済みの方はそのまま送信してください。
+        </p>
       </div>
 
       <div class="field-group" id="emailGroup" style="display:none;">
@@ -308,7 +325,6 @@
 <footer>© クリーンハンター｜このフォームからの送信は仮予約です。確定後に正式なご予約となります。</footer>
 
 <script>
-// ── Googleカレンダーから空き状況を取得・表示 ──────────
 var CAL_ID  = 'j9fic7ehsfr41cb316v3jl95i0@group.calendar.google.com';
 var API_KEY = 'AIzaSyBxn2wk_8uH9c2Zeq7IvCRrFSjOuxURhLw';
 var calEvents = {};
@@ -428,7 +444,6 @@ function updateDateSelects() {
   if (s2) s2.innerHTML = buildOptions('--- 日付を選択（任意）---');
 }
 
-// ── メイン処理 ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   var now = new Date();
   calCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -455,20 +470,22 @@ document.addEventListener('DOMContentLoaded', function() {
   var successLine   = g('successLine');
   var successOther  = g('successOther');
 
-  // 連絡方法切り替え
   if (contactMethod) contactMethod.addEventListener('change', function() {
     var val = this.value;
     var showEmail = (val === 'メール' || val === 'どれでも可');
     var showPhone = (val === '電話'   || val === 'どれでも可');
+    var showLine  = (val === 'LINE'   || val === 'どれでも可');
     if (emailGroup) emailGroup.style.display = showEmail ? 'block' : 'none';
     if (phoneGroup) phoneGroup.style.display = showPhone ? 'block' : 'none';
     if (emailInput) { emailInput.required = (val === 'メール'); if (!showEmail) emailInput.value = ''; }
     if (phoneInput) { phoneInput.required = (val === '電話');   if (!showPhone) phoneInput.value = ''; }
     if (emailReqBadge) { emailReqBadge.textContent = (val === 'メール') ? '必須' : '任意'; emailReqBadge.className = (val === 'メール') ? 'req' : 'opt'; }
     if (phoneReqBadge) { phoneReqBadge.textContent = (val === '電話') ? '必須' : '任意'; phoneReqBadge.className = (val === '電話') ? 'req' : 'opt'; }
+    // LINE友だち追加案内の表示切り替え
+    var lineNotice = g('lineNotice');
+    if (lineNotice) lineNotice.style.display = showLine ? 'block' : 'none';
   });
 
-  // 作業メニュー切り替え
   if (menuSelect) menuSelect.addEventListener('change', function() {
     var val = this.value;
     var isAircon = (val === 'エアコンクリーニング');
@@ -481,7 +498,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (washerPhoto) { washerPhoto.required = isDrum; if (!isDrum) washerPhoto.value = ''; }
   });
 
-  // フォーム送信
   if (!form) return;
 
   form.addEventListener('submit', function(e) {

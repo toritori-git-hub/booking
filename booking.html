@@ -1,48 +1,3 @@
-Skip to content
-toritori-git-hub
-booking
-Repository navigation
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security and quality
-1
- (1)
-Insights
-Settings
-Commit f37f3ee
-toritori-git-hubclaude
-toritori-git-hub
-and
-claude
-committed
-on Jun 15
-仮予約フォーム完成：カレンダー連動・スプレッドシート保存・LINE/メール/電話対応
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-main
-0 parents  commit 
-f37f3ee
-3 files changed
-+733
-Lines changed: 733 additions & 0 deletions
-File tree
-
-booking.html
-gas_doPost.js
-message_template.txt
-
- 
-Customizable line height
-The default line height has been increased for improved accessibility. You can choose to enable a more compact line height from the view settings menu.
-
-‎booking.html‎
-+522
-Lines changed: 522 additions & 0 deletions
-Original file line number	Diff line number	Diff line change
-@@ -0,0 +1,522 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -91,6 +46,7 @@ Original file line number	Diff line number	Diff line change
     .line-btn:hover { opacity: 0.88; }
     footer { text-align: center; font-size: 0.75rem; color: #aaa; padding: 20px; }
     @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } header h1 { font-size: 1.25rem; } }
+
     /* カスタムカレンダー */
     #availCalendar { font-family: inherit; }
     .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -115,6 +71,7 @@ Original file line number	Diff line number	Diff line change
   </style>
 </head>
 <body>
+
 <header>
   <h1>🧹 仮予約フォーム</h1>
   <div class="lead">
@@ -125,20 +82,26 @@ Original file line number	Diff line number	Diff line change
   </div>
   <span class="time-note">⏱ 入力は1分程度です。お気軽にご相談ください。</span>
 </header>
+
 <div class="container">
+
   <div class="section-title">▶ 空き状況カレンダー</div>
   <div class="calendar-wrap">
     <p class="note">⭕️ 予約可能 &nbsp;／&nbsp; 🔺 残りわずか &nbsp;／&nbsp; ❌ 満員・受付不可</p>
     <div id="availCalendar"><div class="cal-loading">カレンダーを読み込み中...</div></div>
   </div>
+
   <div class="section-title">▶ 仮予約フォーム</div>
   <div class="form-card">
+
     <form id="bookingForm" action="https://script.google.com/macros/s/AKfycbwU1VE4Pc6X4wa9RNxJUiy3PP7xPhz12nZGFjj_A2TuEDj16eDNv20aBuE4NVH-9NP0/exec" method="POST">
+
       <div class="field-group">
         <label>① LINE名 または お名前<span class="req">必須</span></label>
         <p class="field-desc">LINEをご利用の方はLINEのお名前を、ご利用でない方はお名前をご入力ください。</p>
         <input type="text" name="line_name" placeholder="例：山田 太郎" required>
       </div>
+
       <div class="field-group">
         <label>ご希望の連絡方法<span class="req">必須</span></label>
         <select name="contact_method" id="contactMethod" required>
@@ -149,21 +112,25 @@ Original file line number	Diff line number	Diff line change
           <option value="どれでも可">どれでも可</option>
         </select>
       </div>
+
       <div class="field-group" id="emailGroup" style="display:none;">
         <label>メールアドレス<span id="emailReqBadge" class="req">必須</span></label>
         <p class="field-desc">メールでの連絡をご希望の方はご入力ください。</p>
         <input type="email" name="email" id="emailInput" placeholder="例：example@email.com">
       </div>
+
       <div class="field-group" id="phoneGroup" style="display:none;">
         <label>電話番号<span id="phoneReqBadge" class="req">必須</span></label>
         <p class="field-desc">電話での連絡をご希望の方はご入力ください。</p>
         <input type="tel" name="phone" id="phoneInput" placeholder="例：090-0000-0000">
       </div>
+
       <div class="field-group">
         <label>② 作業場所<span class="req">必須</span></label>
         <p class="field-desc">市区町村・町名までご入力ください。番地は正式予約後にお伺いします。</p>
         <input type="text" name="address" placeholder="例：神戸市東灘区深江南町" required>
       </div>
+
       <div class="field-group">
         <label>③ ご希望の作業<span class="req">必須</span></label>
         <select name="menu" id="menuSelect" required>
@@ -179,6 +146,7 @@ Original file line number	Diff line number	Diff line change
           <option value="その他（備考欄に記載）">その他（備考欄に記載）</option>
         </select>
       </div>
+
       <div class="cond-section" id="airconSection">
         <h3>🌬️ エアコンクリーニング 追加情報</h3>
         <div class="row2">
@@ -203,6 +171,7 @@ Original file line number	Diff line number	Diff line change
           <input type="text" name="aircon_info" placeholder="例：ダイキン F-40XEXV">
         </div>
       </div>
+
       <div class="cond-section" id="washerSection">
         <h3>🫧 ドラム式洗濯機クリーニング 追加情報</h3>
         <div class="field-group">
@@ -225,10 +194,12 @@ Original file line number	Diff line number	Diff line change
           </select>
         </div>
       </div>
+
       <div class="field-group">
         <label>④ お困りごと<span class="req">必須</span></label>
         <textarea name="trouble" placeholder="例：&#10;・エアコンがカビ臭い&#10;・ドラム式洗濯機が乾かない&#10;・生乾き臭がする&#10;・赤ちゃんが生まれる前に綺麗にしたい" required></textarea>
       </div>
+
       <div class="field-group">
         <label>⑤ お急ぎですか？<span class="req">必須</span></label>
         <select name="urgency" required>
@@ -237,6 +208,7 @@ Original file line number	Diff line number	Diff line change
           <option>空いている日ならいつでも</option><option>急ぎではない</option>
         </select>
       </div>
+
       <div class="field-group">
         <label>⑥ 当店のご利用は初めてですか？<span class="req">必須</span></label>
         <select name="first_visit" required>
@@ -244,7 +216,9 @@ Original file line number	Diff line number	Diff line change
           <option>初めて</option><option>利用したことがある</option><option>分からない</option>
         </select>
       </div>
+
       <div class="divider"></div>
+
       <div class="choice-block">
         <h3>🥇 第1希望日時</h3>
         <div class="row2">
@@ -263,6 +237,7 @@ Original file line number	Diff line number	Diff line change
           </div>
         </div>
       </div>
+
       <div class="choice-block">
         <h3>🥈 第2希望日時<span style="font-size:0.78rem; font-weight:400; color:#888; margin-left:8px;">（任意）</span></h3>
         <div class="row2">
@@ -281,6 +256,7 @@ Original file line number	Diff line number	Diff line change
           </div>
         </div>
       </div>
+
       <div class="field-group">
         <label>駐車場の有無<span class="req">必須</span></label>
         <select name="parking" required>
@@ -288,16 +264,21 @@ Original file line number	Diff line number	Diff line change
           <option>あり</option><option>なし</option><option>近隣コインパーキングあり</option>
         </select>
       </div>
+
       <div class="divider"></div>
+
       <div class="field-group">
         <label>備考・ご質問・ご要望<span class="opt">任意</span></label>
         <p class="field-desc">複数メニュー希望・ご質問・LINEをご利用でない方の連絡補足などがあればご記入ください。</p>
         <textarea name="notes" placeholder="例：浴室とレンジフードもまとめてお願いしたい、など"></textarea>
       </div>
+
       <input type="hidden" name="submitted_at" id="submittedAt">
       <input type="hidden" name="_subject" value="【仮予約】クリーンハンター">
+
       <button type="submit" class="submit-btn">仮予約を送信する →</button>
     </form>
+
     <div class="success-screen" id="successScreen">
       <div class="check">✅</div>
       <h2>仮予約を受け付けました</h2>
@@ -320,15 +301,19 @@ Original file line number	Diff line number	Diff line change
         </div>
       </div>
     </div>
+
   </div>
 </div>
+
 <footer>© クリーンハンター｜このフォームからの送信は仮予約です。確定後に正式なご予約となります。</footer>
+
 <script>
 // ── Googleカレンダーから空き状況を取得・表示 ──────────
 var CAL_ID  = 'j9fic7ehsfr41cb316v3jl95i0@group.calendar.google.com';
 var API_KEY = 'AIzaSyBxn2wk_8uH9c2Zeq7IvCRrFSjOuxURhLw';
 var calEvents = {};
 var calCurrentMonth;
+
 function calFetchEvents(year, month) {
   var timeMin = new Date(year, month, 1).toISOString();
   var timeMax = new Date(year, month + 2, 0).toISOString();
@@ -338,7 +323,9 @@ function calFetchEvents(year, month) {
     + '&timeMin=' + encodeURIComponent(timeMin)
     + '&timeMax=' + encodeURIComponent(timeMax)
     + '&singleEvents=true&orderBy=startTime&maxResults=200';
+
   document.getElementById('availCalendar').innerHTML = '<div class="cal-loading">カレンダーを読み込み中...</div>';
+
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -364,19 +351,23 @@ function calFetchEvents(year, month) {
       document.getElementById('availCalendar').innerHTML = '<div class="cal-loading">カレンダーの読み込みに失敗しました。</div>';
     });
 }
+
 function calRender(year, month) {
   var todayDate = new Date(); todayDate.setHours(0,0,0,0);
   var firstDay    = new Date(year, month, 1).getDay();
   var daysInMonth = new Date(year, month + 1, 0).getDate();
   var monthNames  = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   var dows = ['日','月','火','水','木','金','土'];
+
   var html = '<div class="cal-header">'
     + '<button id="calPrev">＜</button>'
     + '<span class="cal-title">' + year + '年 ' + monthNames[month] + '</span>'
     + '<button id="calNext">＞</button></div>'
     + '<div class="cal-grid">'
     + dows.map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join('');
+
   for (var i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
   for (var d = 1; d <= daysInMonth; d++) {
     var date    = new Date(year, month, d);
     var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
@@ -384,16 +375,19 @@ function calRender(year, month) {
     var isToday = date.getTime() === todayDate.getTime();
     var mark    = calEvents[dateStr] || '';
     var cls = 'cal-day'; var mh = ''; var lh = '';
+
     if (isPast) { cls += ' past'; }
     else if (mark === '⭕️') { cls += ' available'; mh = '<span class="cal-mark">⭕️</span>'; lh = '<span class="cal-label">予約可</span>'; }
     else if (mark === '🔺') { cls += ' triangle';  mh = '<span class="cal-mark">🔺</span>';  lh = '<span class="cal-label">残りわずか</span>'; }
     else if (mark === '❌') { cls += ' full';      mh = '<span class="cal-mark">❌</span>';  lh = '<span class="cal-label">満員</span>'; }
     else { cls += ' full'; }
     if (isToday) cls += ' today';
+
     html += '<div class="' + cls + '"><span class="cal-num">' + d + '</span>' + mh + lh + '</div>';
   }
   html += '</div>';
   document.getElementById('availCalendar').innerHTML = html;
+
   document.getElementById('calPrev').onclick = function() {
     var now = new Date();
     if (calCurrentMonth.getFullYear() === now.getFullYear() && calCurrentMonth.getMonth() === now.getMonth()) return;
@@ -405,6 +399,7 @@ function calRender(year, month) {
     calFetchEvents(calCurrentMonth.getFullYear(), calCurrentMonth.getMonth());
   };
 }
+
 function updateDateSelects() {
   var todayDate = new Date(); todayDate.setHours(0,0,0,0);
   var dows = ['日','月','火','水','木','金','土'];
@@ -412,6 +407,7 @@ function updateDateSelects() {
     var dt = new Date(d + 'T00:00:00');
     return dt >= todayDate && (calEvents[d] === '⭕️' || calEvents[d] === '🔺');
   }).sort();
+
   function buildOptions(emptyLabel) {
     var html = '<option value="">' + emptyLabel + '</option>';
     if (available.length === 0) {
@@ -425,17 +421,21 @@ function updateDateSelects() {
     });
     return html;
   }
+
   var s1 = document.getElementById('firstDateSelect');
   var s2 = document.getElementById('secondDateSelect');
   if (s1) s1.innerHTML = buildOptions('--- 日付を選択 ---');
   if (s2) s2.innerHTML = buildOptions('--- 日付を選択（任意）---');
 }
+
 // ── メイン処理 ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   var now = new Date();
   calCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   calFetchEvents(now.getFullYear(), now.getMonth());
+
   function g(id) { return document.getElementById(id); }
+
   var contactMethod = g('contactMethod');
   var emailGroup    = g('emailGroup');
   var phoneGroup    = g('phoneGroup');
@@ -454,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var successScreen = g('successScreen');
   var successLine   = g('successLine');
   var successOther  = g('successOther');
+
   // 連絡方法切り替え
   if (contactMethod) contactMethod.addEventListener('change', function() {
     var val = this.value;
@@ -466,6 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (emailReqBadge) { emailReqBadge.textContent = (val === 'メール') ? '必須' : '任意'; emailReqBadge.className = (val === 'メール') ? 'req' : 'opt'; }
     if (phoneReqBadge) { phoneReqBadge.textContent = (val === '電話') ? '必須' : '任意'; phoneReqBadge.className = (val === '電話') ? 'req' : 'opt'; }
   });
+
   // 作業メニュー切り替え
   if (menuSelect) menuSelect.addEventListener('change', function() {
     var val = this.value;
@@ -478,15 +480,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (washerRack)  { washerRack.required  = isDrum; if (!isDrum) washerRack.value  = ''; }
     if (washerPhoto) { washerPhoto.required = isDrum; if (!isDrum) washerPhoto.value = ''; }
   });
+
   // フォーム送信
   if (!form) return;
+
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     g('submittedAt').value = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
     var btn = form.querySelector('.submit-btn');
     btn.textContent = '送信中...';
     btn.disabled = true;
+
     var method = contactMethod ? contactMethod.value : '';
+
     function showSuccess() {
       form.style.display = 'none';
       if (successLine)   successLine.style.display  = (method === 'LINE') ? 'block' : 'none';
@@ -494,6 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (successScreen) successScreen.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
     var params = new URLSearchParams(new FormData(form));
     fetch(form.getAttribute('action'), {
       method: 'POST',
@@ -507,208 +515,8 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('送信に失敗しました。もう一度お試しください。');
     });
   });
+
 });
 </script>
 </body>
 </html>
-‎gas_doPost.js‎
-+169
-Lines changed: 169 additions & 0 deletions
-Original file line number	Diff line number	Diff line change
-@@ -0,0 +1,169 @@
-// ═══════════════════════════════════════════════
-//  クリーンハンター 仮予約受付 GAS doPost
-//  Googleスプレッドシートに予約データを保存する
-// ═══════════════════════════════════════════════
-// ▼ ここにスプレッドシートIDを入れる（URLの /d/〇〇〇/edit の〇〇〇部分）
-const SHEET_ID   = '1MnC06qXeweHsuX9wbnYRvpFzOqenL8IkqBObOyZ8n-I';
-const SHEET_NAME = '予約一覧';
-// ▼ 通知メールの送信先（担当者メールアドレス）
-const NOTIFY_EMAIL = 'info@clean-hunter.com';
-// 見出し行の定義（列順）
-const HEADERS = [
-  '送信日時',
-  'LINE名またはお名前',
-  '希望連絡方法',
-  'メールアドレス',
-  '電話番号',
-  '作業場所',
-  '希望作業',
-  'エアコン台数',
-  'お掃除機能',
-  'エアコンメーカー型番',
-  'ドラム式メーカー型番',
-  '洗濯機上ラック有無',
-  '設置写真送付状況',
-  'お困りごと',
-  'お急ぎ度',
-  '初回利用',
-  '第1希望日',
-  '第1希望時間帯',
-  '第2希望日',
-  '第2希望時間帯',
-  '駐車場',
-  '備考'
-];
-function doPost(e) {
-  try {
-    // ── リクエストボディをJSONとして解析 ──
-    var raw = e.postData ? e.postData.contents : '{}';
-    var data = JSON.parse(raw);
-    // ── スプレッドシートを取得 ──
-    var ss    = SpreadsheetApp.openById(SHEET_ID);
-    var sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-    }
-    // ── 1行目が空なら見出しを挿入 ──
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(HEADERS);
-      // 見出し行を太字・背景色で装飾
-      var headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
-      headerRange.setFontWeight('bold');
-      headerRange.setBackground('#1a73e8');
-      headerRange.setFontColor('#ffffff');
-    }
-    // ── 保存するデータ行を作成（HEADERS順に並べる） ──
-    var row = [
-      data.submitted_at     || new Date().toLocaleString('ja-JP'),
-      data.line_name        || '',
-      data.contact_method   || '',
-      data.email            || '',
-      data.phone            || '',
-      data.address          || '',
-      data.menu             || '',
-      data.aircon_count     || '',
-      data.aircon_clean_func || '',
-      data.aircon_info      || '',
-      data.washer_info      || '',
-      data.washer_rack      || '',
-      data.washer_photo     || '',
-      data.trouble          || '',
-      data.urgency          || '',
-      data.first_visit      || '',
-      data.first_date       || '',
-      data.first_time       || '',
-      data.second_date      || '',
-      data.second_time      || '',
-      data.parking          || '',
-      data.notes            || ''
-    ];
-    sheet.appendRow(row);
-    // ── 担当者へ通知メールを送信 ──
-    var subject = '【仮予約】' + (data.line_name || '不明') + ' 様より仮予約が届きました';
-    var body = [
-      '■ 仮予約が届きました',
-      '',
-      '送信日時　　　：' + (data.submitted_at || ''),
-      'お名前　　　　：' + (data.line_name || ''),
-      '連絡方法　　　：' + (data.contact_method || ''),
-      'メールアドレス：' + (data.email || '（なし）'),
-      '電話番号　　　：' + (data.phone || '（なし）'),
-      '作業場所　　　：' + (data.address || ''),
-      '希望作業　　　：' + (data.menu || ''),
-      'エアコン台数　：' + (data.aircon_count || ''),
-      'お掃除機能　　：' + (data.aircon_clean_func || ''),
-      'エアコン型番　：' + (data.aircon_info || ''),
-      'ドラム式型番　：' + (data.washer_info || ''),
-      'ラック有無　　：' + (data.washer_rack || ''),
-      '写真送付状況　：' + (data.washer_photo || ''),
-      'お困りごと　　：' + (data.trouble || ''),
-      'お急ぎ度　　　：' + (data.urgency || ''),
-      '初回利用　　　：' + (data.first_visit || ''),
-      '第1希望日　　：' + (data.first_date || '') + ' ' + (data.first_time || ''),
-      '第2希望日　　：' + (data.second_date || '') + ' ' + (data.second_time || ''),
-      '駐車場　　　　：' + (data.parking || ''),
-      '備考　　　　　：' + (data.notes || ''),
-      '',
-      '─────────────────',
-      '※ スプレッドシートにも自動保存されています。',
-      '※ このメールはフォーム送信時に自動送信されました。'
-    ].join('\n');
-    MailApp.sendEmail(NOTIFY_EMAIL, subject, body);
-    // ── 成功レスポンスを返す ──
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: 'success' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    // ── エラーレスポンスを返す ──
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: 'error', message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-// ── テスト用（GASエディタから手動実行して動作確認） ──
-function testDoPost() {
-  var testData = {
-    submitted_at:      '2026/06/13 12:00:00',
-    line_name:         'テスト太郎',
-    contact_method:    'LINE',
-    email:             '',
-    phone:             '',
-    address:           '神戸市東灘区深江南町',
-    menu:              'エアコンクリーニング',
-    aircon_count:      '2台',
-    aircon_clean_func: 'あり',
-    aircon_info:       'ダイキン F-40XEXV',
-    washer_info:       '',
-    washer_rack:       '',
-    washer_photo:      '',
-    trouble:           'エアコンがカビ臭い',
-    urgency:           '1週間以内希望',
-    first_visit:       '初めて',
-    first_date:        '2026-06-20',
-    first_time:        '午前',
-    second_date:       '2026-06-21',
-    second_time:       'どちらでも可',
-    parking:           'あり',
-    notes:             ''
-  };
-  var mockEvent = {
-    postData: { contents: JSON.stringify(testData) }
-  };
-  var result = doPost(mockEvent);
-  Logger.log(result.getContent());
-}
-‎message_template.txt‎
-+42
-Lines changed: 42 additions & 0 deletions
-Original file line number	Diff line number	Diff line change
-@@ -0,0 +1,42 @@
-━━━━━━━━━━━━━━━━━━━━━━
-【返信が遅れた場合】
-━━━━━━━━━━━━━━━━━━━━━━
-ご返事をいただいておきながら返信が遅くなり、申し訳ございません。
-現在エアコンクリーニングの繁忙期でご予約が大変込み合っております。
-順番にご対応しておりますので、少々お待ちいただけますと幸いです。
-━━━━━━━━━━━━━━━━━━━━━━
-【通常の空き状況案内】
-━━━━━━━━━━━━━━━━━━━━━━
-お問い合わせありがとうございます。
-下記の仮予約フォームより、ご希望の日時をお申し込みいただけます。
-📅 空き状況カレンダー＆仮予約フォーム
-→ https://elegant-babka-8d80b4.netlify.app
-フォームでは第一希望・第二希望の日時をお選びいただけます。
-ご住所（町名まで）もあわせてご入力ください。
-移動・作業導線を確認のうえ、順番にご確定のご連絡を差し上げます。
-＊こちらは仮予約です。担当者より改めて確定連絡をいたします。
-＊繁忙期のため、ご希望に添えない場合は第二希望でのご案内となることがあります。
-どうぞよろしくお願いいたします。
-クリーンハンター
-━━━━━━━━━━━━━━━━━━━━━━
-【急ぎのお客様向け】
-━━━━━━━━━━━━━━━━━━━━━━
-お急ぎのところ恐れ入ります。
-優先対応できるかを確認しますので、以下をお知らせください。
-・ご住所（町名まで）
-・ご希望の作業内容
-・ご希望の日付・時間帯（第一・第二希望）
-折り返し最短でご案内いたします。
-クリーンハンター
-0 commit comments
-Comments
-0
- (0)
-Comment
-You're not receiving notifications from this thread.
-There are no files selected for viewing

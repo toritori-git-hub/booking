@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     g('submittedAt').value = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
-    var btn = form.querySelector('.submit-btn');
+    var btn = form.querySelector('button[type="submit"]');
     btn.textContent = '送信中...';
     btn.disabled = true;
 

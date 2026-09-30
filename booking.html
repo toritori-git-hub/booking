@@ -351,12 +351,37 @@ function calFetchEvents(year, month) {
           var title = ev.summary || '';
           var date  = (ev.start.date || ev.start.dateTime || '').slice(0, 10);
           if (!date) return;
-          if (title.indexOf('⭕') !== -1) {
-            calEvents[date] = '⭕️';
-          } else if (title.indexOf('🔺') !== -1) {
-            if (calEvents[date] !== '⭕️') calEvents[date] = '🔺';
-          } else if (title.indexOf('❌') !== -1 || title.indexOf('×') !== -1) {
-            if (!calEvents[date]) calEvents[date] = '❌';
+
+          // 午前・午後の判定
+          var isAM = title.indexOf('午前') !== -1;
+          var isPM = title.indexOf('午後') !== -1;
+          var isAvail  = title.indexOf('⭕') !== -1;
+          var isTriangle = title.indexOf('🔺') !== -1;
+          var isFull   = title.indexOf('❌') !== -1 || title.indexOf('×') !== -1;
+
+          if (!calEvents[date]) {
+            calEvents[date] = { am: '', pm: '' };
+          }
+
+          if (isAM) {
+            if (isAvail)    calEvents[date].am = '⭕️';
+            else if (isTriangle) calEvents[date].am = '🔺';
+            else if (isFull) calEvents[date].am = '❌';
+          } else if (isPM) {
+            if (isAvail)    calEvents[date].pm = '⭕️';
+            else if (isTriangle) calEvents[date].pm = '🔺';
+            else if (isFull) calEvents[date].pm = '❌';
+          } else {
+            // 午前・午後の記載がない場合は従来通り
+            if (isAvail)    { calEvents[date].am = '⭕️'; calEvents[date].pm = '⭕️'; }
+            else if (isTriangle) {
+              if (calEvents[date].am !== '⭕️') calEvents[date].am = '🔺';
+              if (calEvents[date].pm !== '⭕️') calEvents[date].pm = '🔺';
+            }
+            else if (isFull) {
+              if (!calEvents[date].am) calEvents[date].am = '❌';
+              if (!calEvents[date].pm) calEvents[date].pm = '❌';
+            }
           }
         });
       }
@@ -389,14 +414,24 @@ function calRender(year, month) {
     var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     var isPast  = date < todayDate;
     var isToday = date.getTime() === todayDate.getTime();
-    var mark    = calEvents[dateStr] || '';
+    var ev  = calEvents[dateStr] || { am: '', pm: '' };
     var cls = 'cal-day'; var mh = ''; var lh = '';
 
     if (isPast) { cls += ' past'; }
-    else if (mark === '⭕️') { cls += ' available'; mh = '<span class="cal-mark">⭕️</span>'; lh = '<span class="cal-label">予約可</span>'; }
-    else if (mark === '🔺') { cls += ' triangle';  mh = '<span class="cal-mark">🔺</span>';  lh = '<span class="cal-label">残りわずか</span>'; }
-    else if (mark === '❌') { cls += ' full';      mh = '<span class="cal-mark">❌</span>';  lh = '<span class="cal-label">満員</span>'; }
-    else { cls += ' full'; }
+    else if (ev.am || ev.pm) {
+      // 午前・午後どちらかでも空きがあれば表示
+      var amMark = ev.am || '❌';
+      var pmMark = ev.pm || '❌';
+      var hasAvail = (amMark === '⭕️' || amMark === '🔺' || pmMark === '⭕️' || pmMark === '🔺');
+      if (hasAvail) {
+        cls += ' available';
+        mh = '<span class="cal-mark" style="font-size:0.65rem;">午前' + amMark + '<br>午後' + pmMark + '</span>';
+      } else {
+        cls += ' full';
+        mh = '<span class="cal-mark">❌</span>';
+        lh = '<span class="cal-label">満員</span>';
+      }
+    } else { cls += ' full'; }
     if (isToday) cls += ' today';
 
     html += '<div class="' + cls + '"><span class="cal-num">' + d + '</span>' + mh + lh + '</div>';
@@ -421,7 +456,9 @@ function updateDateSelects() {
   var dows = ['日','月','火','水','木','金','土'];
   var available = Object.keys(calEvents).filter(function(d) {
     var dt = new Date(d + 'T00:00:00');
-    return dt >= todayDate && (calEvents[d] === '⭕️' || calEvents[d] === '🔺');
+    var ev = calEvents[d];
+    var hasAvail = (ev.am === '⭕️' || ev.am === '🔺' || ev.pm === '⭕️' || ev.pm === '🔺');
+    return dt >= todayDate && hasAvail;
   }).sort();
 
   function buildOptions(emptyLabel) {
@@ -430,9 +467,13 @@ function updateDateSelects() {
       html += '<option value="" disabled>現在空きがありません</option>';
     }
     available.forEach(function(d) {
-      var dt   = new Date(d + 'T00:00:00');
-      var mark = calEvents[d];
-      var label = (dt.getMonth()+1) + '月' + dt.getDate() + '日（' + dows[dt.getDay()] + '）' + mark;
+      var dt  = new Date(d + 'T00:00:00');
+      var ev  = calEvents[d];
+      var amMark = ev.am || '';
+      var pmMark = ev.pm || '';
+      var label = (dt.getMonth()+1) + '月' + dt.getDate() + '日（' + dows[dt.getDay()] + '）';
+      if (amMark && amMark !== '❌') label += ' 午前' + amMark;
+      if (pmMark && pmMark !== '❌') label += ' 午後' + pmMark;
       html += '<option value="' + d + '">' + label + '</option>';
     });
     return html;
@@ -442,6 +483,31 @@ function updateDateSelects() {
   var s2 = document.getElementById('secondDateSelect');
   if (s1) s1.innerHTML = buildOptions('--- 日付を選択 ---');
   if (s2) s2.innerHTML = buildOptions('--- 日付を選択（任意）---');
+
+  // 日付選択時に時間帯を自動更新
+  function updateTimeSelect(dateSelectId, timeSelectId) {
+    var dateSelect = document.getElementById(dateSelectId);
+    var timeSelect = document.getElementById(timeSelectId);
+    if (!dateSelect || !timeSelect) return;
+
+    dateSelect.addEventListener('change', function() {
+      var d  = this.value;
+      var ev = calEvents[d] || { am: '', pm: '' };
+      var amOK = (ev.am === '⭕️' || ev.am === '🔺');
+      var pmOK = (ev.pm === '⭕️' || ev.pm === '🔺');
+      var isRequired = timeSelect.hasAttribute('required');
+      var emptyLabel = isRequired ? '選択' : '選択（任意）';
+
+      var html = '<option value="">' + emptyLabel + '</option>';
+      if (amOK) html += '<option value="午前">午前</option>';
+      if (pmOK) html += '<option value="午後">午後</option>';
+      if (amOK && pmOK) html += '<option value="どちらでも可">どちらでも可</option>';
+      timeSelect.innerHTML = html;
+    });
+  }
+
+  updateTimeSelect('firstDateSelect',  'first_time');
+  updateTimeSelect('secondDateSelect', 'second_time');
 }
 
 document.addEventListener('DOMContentLoaded', function() {

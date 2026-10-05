@@ -109,7 +109,6 @@
           <option value="LINE">LINE</option>
           <option value="メール">メール</option>
           <option value="電話">電話</option>
-          <option value="どれでも可">どれでも可</option>
         </select>
       </div>
 
@@ -538,9 +537,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (contactMethod) contactMethod.addEventListener('change', function() {
     var val = this.value;
-    var showEmail = (val === 'メール' || val === 'どれでも可');
-    var showPhone = (val === '電話'   || val === 'どれでも可');
-    var showLine  = (val === 'LINE'   || val === 'どれでも可');
+    var showEmail = (val === 'メール');
+    var showPhone = (val === '電話');
+    var showLine  = (val === 'LINE');
     if (emailGroup) emailGroup.style.display = showEmail ? 'block' : 'none';
     if (phoneGroup) phoneGroup.style.display = showPhone ? 'block' : 'none';
     if (emailInput) { emailInput.required = (val === 'メール'); if (!showEmail) emailInput.value = ''; }
